@@ -1,411 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>InfinityGoogleplex Location Universe</title>
-<style>
-  /* Basic reset and layout */
-  body, html {
-    margin: 0; padding: 0; height: 100%; overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: radial-gradient(ellipse at center, #000000 0%, #0d0d0d 100%);
-    color: #eee;
-  }
-  #app {
-    position: relative;
-    width: 100vw; height: 100vh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center;
-    padding: 10px;
-    backdrop-filter: blur(10px);
-    background: rgba(0,0,0,0.6);
-  }
-  h1 {
-    font-weight: 900; font-size: 2.4rem; letter-spacing: 2px;
-    margin-bottom: 0.3em;
-    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
-  }
-  #location-info {
-    margin-top: 0.5em;
-    background: #111;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #0ff;
-    max-width: 400px;
-    user-select: none;
-  }
-  .coords {
-    font-size: 1.2rem;
-    margin: 5px 0;
-  }
-  #buttons {
-    margin-top: 20px;
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  button.share-btn {
-    background: #0ff;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-weight: 700;
-    color: #000;
-    cursor: pointer;
-    box-shadow: 0 0 15px #0ff;
-    transition: background 0.3s ease;
-    flex: 1 1 120px;
-  }
-  button.share-btn:hover {
-    background: #00cccc;
-  }
-  #map {
-    width: 90vw;
-    max-width: 600px;
-    height: 300px;
-    margin-top: 20px;
-    border-radius: 15px;
-    box-shadow: 0 0 25px #0ff;
-  }
-  #globe {
-    margin-top: 30px;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    box-shadow: 0 0 30px #0ff;
-  }
-  #qr-code {
-    margin-top: 20px;
-  }
-  #desc, #hash, #status, #countdown {
-    margin-top: 15px;
-    font-size: 1rem;
-    max-width: 400px;
-    word-wrap: break-word;
-    user-select: all;
-  }
-  #dev-panel {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.85);
-    color: #0ff;
-    font-family: monospace;
-    font-size: 0.85rem;
-    padding: 15px;
-    border-radius: 12px;
-    max-width: 350px;
-    max-height: 70vh;
-    overflow-y: auto;
-    box-shadow: 0 0 25px #0ff;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pinpoint X - Next Level Location Sharing</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at center, #00111a 0%, #000000 100%);
+      color: #0ff;
+      text-align: center;
+      margin: 0; padding: 0;
+      overflow-x: hidden;
+    }
+    header {
+      padding: 1rem;
+      font-size: 1.8rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
+    main {
+      margin: 2rem auto;
+      max-width: 600px;
+      background: rgba(0, 15, 30, 0.6);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00ffff88;
+    }
+    label, select, button {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+    }
+    select, button {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      user-select: none;
+      background-color: #003344;
+      color: #0ff;
+      transition: background-color 0.3s ease;
+    }
+    select:hover, button:hover {
+      background-color: #006688;
+    }
+    button {
+      margin: 0.5rem;
+      min-width: 120px;
+    }
+    #locationInfo {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    #mapPreview {
+      margin-top: 1rem;
+      width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #0ff;
+    }
+  </style>
 </head>
 <body>
-<div id="app">
-  <h1>InfinityGoogleplex Location Universe</h1>
-  <div id="location-info">
-    <div class="coords" id="lat">Latitude: --</div>
-    <div class="coords" id="lon">Longitude: --</div>
-    <div class="coords" id="elev">Elevation: -- meters</div>
-    <div id="desc">Loading AI-generated location description...</div>
-    <div id="hash">SHA-256 Hash: --</div>
-    <div id="countdown">Link expires in: --</div>
-  </div>
+  <header>Pinpoint X - Ultra Location Sharing</header>
+  <main>
+    <div>
+      <button id="getLocationBtn">Get My Location</button>
+      <div id="locationInfo">Click "Get My Location" to start</div>
+    </div>
 
-  <div id="buttons">
-    <button class="share-btn" id="whatsapp-btn" title="Share via WhatsApp">WhatsApp</button>
-    <button class="share-btn" id="sms-btn" title="Share via SMS">SMS</button>
-    <button class="share-btn" id="email-btn" title="Share via Email">Email</button>
-    <button class="share-btn" id="telegram-btn" title="Share via Telegram">Telegram</button>
-  </div>
+    <!-- Dropdown for map selection -->
+    <div>
+      <label for="mapApp">Choose map app:</label><br />
+      <select id="mapApp">
+        <option value="google">Google Maps</option>
+        <option value="apple">Apple Maps</option>
+        <option value="waze">Waze</option>
+      </select>
+    </div>
 
-  <div id="map"></div>
-  <canvas id="globe"></canvas>
-  <div id="qr-code"></div>
+    <!-- Share buttons -->
+    <div>
+      <button id="whatsappBtn">WhatsApp</button>
+      <button id="smsBtn">SMS</button>
+      <button id="emailBtn">Email</button>
+      <button id="telegramBtn">Telegram</button>
+    </div>
 
-  <div id="status">Status: Initializing...</div>
-</div>
+    <!-- Map preview -->
+    <img id="mapPreview" alt="Map preview" style="display:none;" />
+  </main>
 
-<div id="dev-panel" hidden>
-  <strong>Developer Panel (Telemetry & Raw Data):</strong><br />
-  <pre id="dev-log">Waiting for data...</pre>
-</div>
+  <script>
+    // Variables to hold current lat/lon
+    let currentLat = null;
+    let currentLon = null;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    // Elements
+    const locationInfo = document.getElementById('locationInfo');
+    const mapPreview = document.getElementById('mapPreview');
+    const mapAppSelect = document.getElementById('mapApp');
 
-<script>
-(() => {
-  const latElem = document.getElementById('lat');
-  const lonElem = document.getElementById('lon');
-  const elevElem = document.getElementById('elev');
-  const descElem = document.getElementById('desc');
-  const hashElem = document.getElementById('hash');
-  const statusElem = document.getElementById('status');
-  const countdownElem = document.getElementById('countdown');
-  const devPanel = document.getElementById('dev-panel');
-  const devLog = document.getElementById('dev-log');
-  const qrCodeContainer = document.getElementById('qr-code');
+    // Get location and update UI
+    document.getElementById('getLocationBtn').addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        locationInfo.textContent = "Geolocation is not supported by your browser.";
+        return;
+      }
+      locationInfo.textContent = "Locating…";
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          currentLat = position.coords.latitude;
+          currentLon = position.coords.longitude;
 
-  let lat = null;
-  let lon = null;
-  let elevation = null;
-  let address = null;
-  let aiDescription = null;
-  let hashValue = null;
-  let expirationTime = Date.now() + 10 * 60 * 1000; // Link expires in 10 mins
-  let password = ''; // can implement password logic later
+          locationInfo.textContent = `Latitude: ${currentLat.toFixed(6)}, Longitude: ${currentLon.toFixed(6)}`;
 
-  let map;
-  let marker;
+          // Show map preview based on selected map app
+          updateMapPreview();
 
-  // Initialize map
-  function initMap(lat, lon) {
-    if (!map) {
-      map = L.map('map').setView([lat, lon], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18,
-      }).addTo(map);
-      marker = L.marker([lat, lon]).addTo(map);
-    } else {
-      map.setView([lat, lon], 13);
-      marker.setLatLng([lat, lon]);
-    }
-  }
-
-  // SHA-256 hash function
-  function sha256(str) {
-    return CryptoJS.SHA256(str).toString(CryptoJS.enc.Hex);
-  }
-
-  // Fetch elevation using Open-Elevation API
-  async function fetchElevation(lat, lon) {
-    try {
-      const res = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`);
-      const data = await res.json();
-      return data.results[0].elevation;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // Reverse geocode using OpenStreetMap Nominatim
-  async function reverseGeocode(lat, lon) {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
-      const data = await res.json();
-      return data.display_name;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // Generate AI description placeholder (You can replace this with a real AI API call)
-  async function generateAiDescription(address) {
-    return `You are currently near: ${address}`;
-  }
-
-  // Generate QR code for sharing URL
-  function generateQRCode(url) {
-    qrCodeContainer.innerHTML = '';
-    new QRCode(qrCodeContainer, {
-      text: url,
-      width: 150,
-      height: 150,
-      colorDark: '#0ff',
-      colorLight: '#000',
-      correctLevel: QRCode.CorrectLevel.H
+          // TODO: Insert your advanced features here:
+          // AI location description, elevation, SHA256 hashing, animated globe, reverse geocoding, etc.
+        },
+        (error) => {
+          locationInfo.textContent = `Error getting location: ${error.message}`;
+          mapPreview.style.display = 'none';
+        }
+      );
     });
-  }
 
-  // Update countdown timer
-  function startCountdown() {
-    function update() {
-      let now = Date.now();
-      let diff = expirationTime - now;
-      if (diff <= 0) {
-        countdownElem.textContent = 'Link expired.';
-        statusElem.textContent = 'Status: Link expired.';
-        // Optionally disable sharing buttons here
-        disableSharingButtons(true);
-      } else {
-        let mins = Math.floor(diff / 60000);
-        let secs = Math.floor((diff % 60000) / 1000);
-        countdownElem.textContent = `Link expires in: ${mins}m ${secs}s`;
+    function getMapLink(lat, lon) {
+      const mapApp = mapAppSelect.value;
+      if (mapApp === 'google') {
+        return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      } else if (mapApp === 'apple') {
+        return `http://maps.apple.com/?ll=${lat},${lon}`;
+      } else if (mapApp === 'waze') {
+        return `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+      }
+      return '';
+    }
+
+    function updateMapPreview() {
+      if (!currentLat || !currentLon) return;
+      const mapApp = mapAppSelect.value;
+      let src = '';
+
+      // For preview image, use Google Maps Static API or a free open source alternative
+      // Here using Google Static Maps for example (you should replace with your own API key)
+      if (mapApp === 'google') {
+        src = `https://maps.googleapis.com/maps/api/staticmap?center=${currentLat},${currentLon}&zoom=15&size=600x300&markers=color:cyan%7Clabel:P%7C${currentLat},${currentLon}&key=YOUR_API_KEY`;
+      } else if (mapApp === 'apple') {
+        // Apple Maps does not provide static map image URL, so fallback to Google static map for preview
+        src = `https://maps.googleapis.com/maps/api/staticmap?center=${currentLat},${currentLon}&zoom=15&size=600x300&markers=color:cyan%7Clabel:P%7C${currentLat},${currentLon}&key=YOUR_API_KEY`;
+      } else if (mapApp === 'waze') {
+        // Waze no static map API, fallback again to Google static map
+        src = `https://maps.googleapis.com/maps/api/staticmap?center=${currentLat},${currentLon}&zoom=15&size=600x300&markers=color:cyan%7Clabel:P%7C${currentLat},${currentLon}&key=YOUR_API_KEY`;
+      }
+      mapPreview.src = src;
+      mapPreview.style.display = 'block';
+    }
+
+    function sendMessage(platform, message) {
+      if (platform === 'whatsapp') {
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+      } else if (platform === 'sms') {
+        window.open(`sms:?&body=${encodeURIComponent(message)}`);
+      } else if (platform === 'email') {
+        window.open(`mailto:?subject=My Location&body=${encodeURIComponent(message)}`);
+      } else if (platform === 'telegram') {
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(message)}`, '_blank');
       }
     }
-    update();
-    return setInterval(update, 1000);
-  }
 
-  // Disable/enable sharing buttons
-  function disableSharingButtons(disable) {
-    document.querySelectorAll('button.share-btn').forEach(btn => {
-      btn.disabled = disable;
-      btn.style.opacity = disable ? '0.5' : '1';
-      btn.style.cursor = disable ? 'default' : 'pointer';
+    // Share buttons event listeners
+    document.getElementById('whatsappBtn').addEventListener('click', () => {
+      if (!currentLat || !currentLon) return alert('Location not available yet!');
+      const link = getMapLink(currentLat, currentLon);
+      sendMessage('whatsapp', `Hey, I’m at this location: ${link}`);
     });
-  }
 
-  // Compose shareable message with location info and hash
-  function composeMessage() {
-    return `🚀 My current location: ${address}\n
-Latitude: ${lat}\nLongitude: ${lon}\nElevation: ${elevation}m\n
-SHA-256 Signature: ${hashValue}\n
-Link expires in 10 minutes.\n
-Check out my location universe!`;
-  }
-
-  // Share handlers for each platform
-  function shareWhatsApp() {
-    const message = encodeURIComponent(composeMessage());
-    const url = `https://wa.me/?text=${message}`;
-    window.open(url, '_blank');
-  }
-  function shareSMS() {
-    const message = encodeURIComponent(composeMessage());
-    const url = `sms:?&body=${message}`;
-    window.open(url);
-  }
-  function shareEmail() {
-    const subject = encodeURIComponent('My Location Universe 🌌');
-    const body = encodeURIComponent(composeMessage());
-    const url = `mailto:?subject=${subject}&body=${body}`;
-    window.open(url);
-  }
-  function shareTelegram() {
-    const message = encodeURIComponent(composeMessage());
-    const url = `https://t.me/share/url?url=&text=${message}`;
-    window.open(url, '_blank');
-  }
-
-  // Voice-over the AI description
-  function speakDescription(text) {
-    if (!('speechSynthesis' in window)) return;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 1;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  }
-
-  // Animate globe canvas (simple rotating Earth)
-  function animateGlobe() {
-    const canvas = document.getElementById('globe');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 200;
-    canvas.height = 200;
-
-    const earth = new Image();
-    earth.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Earth_equirectangular_projection_SW.jpg/320px-Earth_equirectangular_projection_SW.jpg';
-
-    let rotation = 0;
-
-    earth.onload = () => {
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
-        ctx.translate(canvas.width/2, canvas.height/2);
-        ctx.rotate(rotation);
-        ctx.drawImage(earth, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
-        ctx.restore();
-        rotation += 0.002;
-        requestAnimationFrame(draw);
-      }
-      draw();
-    }
-  }
-
-  // Developer panel toggle on Ctrl+D
-  document.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.key.toLowerCase() === 'd') {
-      devPanel.hidden = !devPanel.hidden;
-    }
-  });
-
-  // Main function to get geolocation and update UI
-  async function updateLocation() {
-    if (!navigator.geolocation) {
-      statusElem.textContent = 'Geolocation is not supported by your browser.';
-      return;
-    }
-    statusElem.textContent = 'Obtaining location...';
-
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      lat = position.coords.latitude.toFixed(6);
-      lon = position.coords.longitude.toFixed(6);
-      elevElem.textContent = 'Elevation: fetching...';
-      latElem.textContent = `Latitude: ${lat}`;
-      lonElem.textContent = `Longitude: ${lon}`;
-
-      elevation = await fetchElevation(lat, lon);
-      elevElem.textContent = `Elevation: ${elevation !== null ? elevation + ' m' : 'Unavailable'}`;
-
-      address = await reverseGeocode(lat, lon) || 'Unknown location';
-      descElem.textContent = 'Generating AI description...';
-
-      aiDescription = await generateAiDescription(address);
-      descElem.textContent = aiDescription;
-
-      // Speak the description once loaded
-      speakDescription(aiDescription);
-
-      const rawDataString = `${lat},${lon},${elevation},${address}`;
-      hashValue = sha256(rawDataString);
-      hashElem.textContent = `SHA-256 Hash: ${hashValue}`;
-
-      // Initialize or update map
-      initMap(lat, lon);
-
-      // Generate shareable URL for QR code (you can replace base URL with your own)
-      const shareURL = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&elev=${elevation}&hash=${hashValue}`;
-      generateQRCode(shareURL);
-
-      statusElem.textContent = 'Location updated successfully.';
-      devLog.textContent = JSON.stringify({
-        latitude: lat,
-        longitude: lon,
-        elevation,
-        address,
-        aiDescription,
-        hashValue,
-        shareURL,
-        timestamp: new Date().toISOString(),
-      }, null, 2);
-    }, (error) => {
-      statusElem.textContent = `Error obtaining location: ${error.message}`;
-    }, {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0,
+    document.getElementById('smsBtn').addEventListener('click', () => {
+      if (!currentLat || !currentLon) return alert('Location not available yet!');
+      const link = getMapLink(currentLat, currentLon);
+      sendMessage('sms', `Hey, I’m at this location: ${link}`);
     });
-  }
 
-  // Initialize globe animation
-  animateGlobe();
+    document.getElementById('emailBtn').addEventListener('click', () => {
+      if (!currentLat || !currentLon) return alert('Location not available yet!');
+      const link = getMapLink(currentLat, currentLon);
+      sendMessage('email', `Hey, I’m at this location: ${link}`);
+    });
 
-  // Set up sharing buttons
-  document.getElementById('whatsapp-btn').onclick = shareWhatsApp;
-  document.getElementById('sms-btn').onclick = shareSMS;
-  document.getElementById('email-btn').onclick = shareEmail;
-  document.getElementById('telegram-btn').onclick = shareTelegram;
+    document.getElementById('telegramBtn').addEventListener('click', () => {
+      if (!currentLat || !currentLon) return alert('Location not available yet!');
+      const link = getMapLink(currentLat, currentLon);
+      sendMessage('telegram', `Hey, I’m at this location: ${link}`);
+    });
 
-  // Start countdown
-  startCountdown();
-
-  // Kick off first location update
-  updateLocation();
-
-  // Optionally, auto-update location every 60 seconds
-  setInterval(updateLocation, 60000);
-
-})();
-</script>
+    // Update preview if map app changes and location already available
+    mapAppSelect.addEventListener('change', () => {
+      updateMapPreview();
+    });
+  </script>
 </body>
 </html>
