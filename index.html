@@ -2,692 +2,410 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Pinpoint X — Next-Gen Location Sharing</title>
-<meta name="description" content="Pinpoint X — Share your exact location securely with friends via WhatsApp, SMS, Email, or Maps." />
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-  integrity="sha256-sA+Zd5PyMmyjz73VGLYdWhDqR7xuN5+z3/IkKGIYkG0="
-  crossorigin=""
-/>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InfinityGoogleplex Location Universe</title>
 <style>
-  /* Reset + base */
-  * {
-    box-sizing: border-box;
+  /* Basic reset and layout */
+  body, html {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: radial-gradient(ellipse at center, #000000 0%, #0d0d0d 100%);
+    color: #eee;
   }
-  body {
-    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #001f3f 0%, #004466 100%);
-    color: #e0f7fa;
-    overflow-x: hidden;
-    min-height: 100vh;
+  #app {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 10px;
+    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.6);
   }
-  h1, h2, h3 {
-    margin: 0 0 0.5rem;
+  h1 {
+    font-weight: 900; font-size: 2.4rem; letter-spacing: 2px;
+    margin-bottom: 0.3em;
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
   }
-  a {
-    color: #00ffff;
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-
-  /* Glassmorphism container */
-  .glass-card {
-    background: rgba(0, 40, 60, 0.4);
-    border-radius: 16px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
-    margin: 1rem auto;
+  #location-info {
+    margin-top: 0.5em;
+    background: #111;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #0ff;
     max-width: 400px;
-    padding: 1.5rem;
-    color: #d0f0f5;
-  }
-
-  /* Buttons */
-  button, .btn {
-    cursor: pointer;
-    background: linear-gradient(45deg, #00ffff, #008080);
-    border: none;
-    border-radius: 8px;
-    color: #003f4f;
-    font-weight: 600;
-    padding: 0.75rem 1rem;
-    margin: 0.5rem 0.25rem 0.25rem 0;
-    box-shadow: 0 2px 8px #00ffffaa;
-    transition: all 0.3s ease;
     user-select: none;
   }
-  button:hover, .btn:hover {
-    background: linear-gradient(45deg, #00e6e6, #004f4f);
-    color: #ccffff;
+  .coords {
+    font-size: 1.2rem;
+    margin: 5px 0;
   }
-  button:active, .btn:active {
-    box-shadow: inset 0 2px 8px #00cccc;
-  }
-
-  /* Share links */
-  .share-links a {
-    display: inline-block;
-    margin: 0.25rem 0.25rem 0.25rem 0;
-    background: #006666cc;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    color: #b3ffff;
-    font-weight: 700;
-  }
-  .share-links a:hover {
-    background: #00ffffdd;
-    color: #003333;
-  }
-
-  /* Map container */
-  #map {
-    width: 100%;
-    height: 300px;
-    border-radius: 12px;
-    margin-top: 1rem;
-    box-shadow: 0 4px 15px #00ffffbb;
-  }
-
-  /* QR code */
-  #qrcode {
-    margin: 1rem auto 0 auto;
-    width: 150px;
-    height: 150px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 0 16px #00ffff99;
-  }
-
-  /* Countdown timer */
-  #countdown {
-    font-weight: 700;
-    margin-top: 0.75rem;
-    text-align: center;
-    font-size: 1.25rem;
-    color: #00e6e6;
-  }
-
-  /* Dev panel */
-  #devPanel {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(0, 0, 0, 0.9);
-    color: #00ffcc;
-    font-family: monospace;
-    font-size: 0.8rem;
-    max-height: 250px;
-    overflow-y: auto;
-    padding: 0.5rem 1rem;
-    display: none;
-    z-index: 9999;
-    border-top: 3px solid #00ffff;
-  }
-  #devTabs {
+  #buttons {
+    margin-top: 20px;
     display: flex;
-    margin-bottom: 0.5rem;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
-  #devTabs button {
-    flex: 1;
-    background: transparent;
+  button.share-btn {
+    background: #0ff;
     border: none;
-    color: #00ffff;
-    border-bottom: 2px solid transparent;
-    padding: 0.5rem;
-    font-weight: 600;
-  }
-  #devTabs button.active {
-    border-bottom: 2px solid #00ffff;
+    border-radius: 8px;
+    padding: 12px 20px;
     font-weight: 700;
-  }
-  #devContent pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-
-  /* Light/dark toggle */
-  #modeToggle {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    background: #004444cc;
-    border-radius: 12px;
-    color: #00ffff;
-    font-weight: 700;
-    border: none;
-    padding: 0.5rem 1rem;
+    color: #000;
     cursor: pointer;
-    box-shadow: 0 0 10px #00ffff99;
+    box-shadow: 0 0 15px #0ff;
+    transition: background 0.3s ease;
+    flex: 1 1 120px;
   }
-  #modeToggle:hover {
-    background: #00ccccdd;
-    color: #003333;
+  button.share-btn:hover {
+    background: #00cccc;
   }
-
-  /* Voice assistant output */
-  #voiceOutput {
-    margin-top: 0.75rem;
-    font-style: italic;
-    color: #66ffffcc;
-    text-align: center;
+  #map {
+    width: 90vw;
+    max-width: 600px;
+    height: 300px;
+    margin-top: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 25px #0ff;
   }
-
-  /* Floating glass cards parallax */
-  .floating {
-    transform-style: preserve-3d;
-    will-change: transform;
+  #globe {
+    margin-top: 30px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    box-shadow: 0 0 30px #0ff;
   }
-
-  /* Responsive */
-  @media (max-width: 500px) {
-    .glass-card {
-      margin: 0.5rem;
-      padding: 1rem;
-    }
+  #qr-code {
+    margin-top: 20px;
   }
-
-  /* Animated holographic button gradient */
-  @keyframes holoGradient {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+  #desc, #hash, #status, #countdown {
+    margin-top: 15px;
+    font-size: 1rem;
+    max-width: 400px;
+    word-wrap: break-word;
+    user-select: all;
   }
-  button.holo {
-    background: linear-gradient(270deg, #00ffff, #009999, #00ffff);
-    background-size: 400% 400%;
-    animation: holoGradient 8s ease infinite;
-    color: #003f4f;
-  }
-
-  /* Globe canvas full screen behind */
-  #globeCanvas {
+  #dev-panel {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    filter: brightness(0.6) contrast(1.3);
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.85);
+    color: #0ff;
+    font-family: monospace;
+    font-size: 0.85rem;
+    padding: 15px;
+    border-radius: 12px;
+    max-width: 350px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 0 25px #0ff;
   }
-
 </style>
 </head>
 <body>
-
-<canvas id="globeCanvas"></canvas>
-
-<button id="modeToggle" title="Toggle Light/Dark Mode">Dark Mode</button>
-
-<div class="glass-card floating" id="mainCard">
-  <h1>Pinpoint X</h1>
-  <p>Your next-gen location sharer.</p>
-
-  <button id="getLocationBtn" class="holo">📍 Get My Exact Location</button>
-
-  <div id="locationInfo" style="display:none;">
-    <h2>Location Details</h2>
-    <p><strong>Latitude:</strong> <span id="lat"></span></p>
-    <p><strong>Longitude:</strong> <span id="lon"></span></p>
-    <p><strong>Elevation:</strong> <span id="elev"></span> meters</p>
-    <p><strong>Speed:</strong> <span id="speed"></span> m/s</p>
-    <p><strong>Direction:</strong> <span id="direction"></span>°</p>
-    <p><strong>Address:</strong> <span id="address"></span></p>
-    <p><strong>AI Description:</strong> <span id="aiDesc"></span></p>
-    <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
-    <p><strong>SHA-256 Hash:</strong> <span id="hash"></span></p>
-    <p><strong>Freshness:</strong> <span id="freshness"></span> ago</p>
-    <p><strong>Link Expiry:</strong> <span id="countdown"></span></p>
-
-    <div id="map"></div>
-
-    <div class="share-links">
-      <a href="#" id="appleMapsLink" target="_blank" rel="noopener">Open in Apple Maps</a>
-      <a href="#" id="googleMapsLink" target="_blank" rel="noopener">Open in Google Maps</a>
-      <a href="#" id="wazeLink" target="_blank" rel="noopener">Open in Waze</a>
-      <a href="#" id="geoLink" target="_blank" rel="noopener">Open geo: URI</a>
-    </div>
-
-    <button id="copyLinkBtn" class="holo">Copy Share Link</button>
-
-    <div id="qrcode"></div>
-
-    <div id="voiceOutput"></div>
+<div id="app">
+  <h1>InfinityGoogleplex Location Universe</h1>
+  <div id="location-info">
+    <div class="coords" id="lat">Latitude: --</div>
+    <div class="coords" id="lon">Longitude: --</div>
+    <div class="coords" id="elev">Elevation: -- meters</div>
+    <div id="desc">Loading AI-generated location description...</div>
+    <div id="hash">SHA-256 Hash: --</div>
+    <div id="countdown">Link expires in: --</div>
   </div>
+
+  <div id="buttons">
+    <button class="share-btn" id="whatsapp-btn" title="Share via WhatsApp">WhatsApp</button>
+    <button class="share-btn" id="sms-btn" title="Share via SMS">SMS</button>
+    <button class="share-btn" id="email-btn" title="Share via Email">Email</button>
+    <button class="share-btn" id="telegram-btn" title="Share via Telegram">Telegram</button>
+  </div>
+
+  <div id="map"></div>
+  <canvas id="globe"></canvas>
+  <div id="qr-code"></div>
+
+  <div id="status">Status: Initializing...</div>
 </div>
 
-<div id="devPanel">
-  <div id="devTabs">
-    <button data-tab="gps" class="active">🛰 GPS</button>
-    <button data-tab="motion">🤖 Motion</button>
-    <button data-tab="compass">🧭 Compass</button>
-    <button data-tab="debug">🐞 Debug</button>
-  </div>
-  <div id="devContent">
-    <pre id="devText">Developer panel is loading...</pre>
-  </div>
+<div id="dev-panel" hidden>
+  <strong>Developer Panel (Telemetry & Raw Data):</strong><br />
+  <pre id="dev-log">Waiting for data...</pre>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-// == GLOBAL STATE & UTILS ==
+(() => {
+  const latElem = document.getElementById('lat');
+  const lonElem = document.getElementById('lon');
+  const elevElem = document.getElementById('elev');
+  const descElem = document.getElementById('desc');
+  const hashElem = document.getElementById('hash');
+  const statusElem = document.getElementById('status');
+  const countdownElem = document.getElementById('countdown');
+  const devPanel = document.getElementById('dev-panel');
+  const devLog = document.getElementById('dev-log');
+  const qrCodeContainer = document.getElementById('qr-code');
 
-const devPanel = document.getElementById('devPanel');
-const devText = document.getElementById('devText');
-const devTabs = document.querySelectorAll('#devTabs button');
-let activeDevTab = 'gps';
+  let lat = null;
+  let lon = null;
+  let elevation = null;
+  let address = null;
+  let aiDescription = null;
+  let hashValue = null;
+  let expirationTime = Date.now() + 10 * 60 * 1000; // Link expires in 10 mins
+  let password = ''; // can implement password logic later
 
-const latEl = document.getElementById('lat');
-const lonEl = document.getElementById('lon');
-const elevEl = document.getElementById('elev');
-const speedEl = document.getElementById('speed');
-const directionEl = document.getElementById('direction');
-const addressEl = document.getElementById('address');
-const aiDescEl = document.getElementById('aiDesc');
-const timestampEl = document.getElementById('timestamp');
-const hashEl = document.getElementById('hash');
-const freshnessEl = document.getElementById('freshness');
-const countdownEl = document.getElementById('countdown');
-const voiceOutputEl = document.getElementById('voiceOutput');
+  let map;
+  let marker;
 
-const appleMapsLink = document.getElementById('appleMapsLink');
-const googleMapsLink = document.getElementById('googleMapsLink');
-const wazeLink = document.getElementById('wazeLink');
-const geoLink = document.getElementById('geoLink');
-
-const copyLinkBtn = document.getElementById('copyLinkBtn');
-
-const mapDiv = document.getElementById('map');
-
-let watchId = null;
-let lastLocationTimestamp = null;
-let freshnessInterval = null;
-let countdownInterval = null;
-
-let currentLocation = null;
-let currentAddress = '';
-let currentHash = '';
-let linkExpirySeconds = 1800; // 30 minutes expiry countdown
-
-let map, marker;
-
-const devLogs = {
-  gps: [],
-  motion: [],
-  compass: [],
-  debug: []
-};
-
-function logDev(type, message) {
-  devLogs[type].push(`[${new Date().toLocaleTimeString()}] ${message}`);
-  if (devLogs[type].length > 100) devLogs[type].shift(); // cap logs
-  if (activeDevTab === type) updateDevText();
-}
-
-function updateDevText() {
-  devText.textContent = devLogs[activeDevTab].join('\n') || 'No data yet.';
-}
-
-// == MODE TOGGLE ==
-
-const modeToggle = document.getElementById('modeToggle');
-let darkMode = true;
-function updateMode() {
-  if(darkMode) {
-    document.body.style.background = 'linear-gradient(135deg, #001f3f 0%, #004466 100%)';
-    modeToggle.textContent = 'Light Mode';
-  } else {
-    document.body.style.background = 'linear-gradient(135deg, #f0f0f0 0%, #cccccc 100%)';
-    modeToggle.textContent = 'Dark Mode';
-  }
-}
-modeToggle.addEventListener('click', () => {
-  darkMode = !darkMode;
-  updateMode();
-});
-updateMode();
-
-// == SHA256 HASH UTILS ==
-
-async function sha256Hash(text) {
-  const hash = CryptoJS.SHA256(text);
-  return hash.toString(CryptoJS.enc.Hex);
-}
-
-// == LOCATION & REVERSE GEOCODING ==
-
-async function reverseGeocode(lat, lon) {
-  try {
-    // Use Nominatim OpenStreetMap for reverse geocode (no key)
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
-    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-    const data = await res.json();
-    if(data && data.display_name) {
-      logDev('gps', `Reverse geocode success: ${data.display_name}`);
-      return data.display_name;
-    }
-  } catch(e) {
-    logDev('debug', `Reverse geocode error: ${e}`);
-  }
-  return 'Unknown location';
-}
-
-// == AI GENERATED DESCRIPTION ==
-
-async function aiDescribeLocation(address) {
-  // Mock simple AI description - replace with real API if you want
-  const keywords = ['museum', 'park', 'university', 'station', 'mall', 'river', 'mountain', 'beach'];
-  for(const kw of keywords) {
-    if(address.toLowerCase().includes(kw)) {
-      return `You’re near a popular ${kw}.`;
-    }
-  }
-  return `You’re near ${address.split(',')[0]}.`;
-}
-
-// == VOICE ASSISTANT ==
-
-function speak(text) {
-  if('speechSynthesis' in window) {
-    const utter = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utter);
-    voiceOutputEl.textContent = `"${text}"`;
-  }
-}
-
-// == MAP INIT ==
-
-function initMap(lat, lon) {
-  if(map) {
-    map.setView([lat, lon], 16);
-    if(marker) marker.setLatLng([lat, lon]);
-    else marker = L.marker([lat, lon]).addTo(map);
-  } else {
-    map = L.map('map').setView([lat, lon], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    marker = L.marker([lat, lon]).addTo(map);
-  }
-}
-
-// == QR CODE GENERATION ==
-
-function generateQRCode(url) {
-  const qrcodeDiv = document.getElementById('qrcode');
-  qrcodeDiv.innerHTML = '';
-  QRCode.toCanvas(url, { width: 150, color: { dark: '#009999', light: '#ffffff' } }, (error, canvas) => {
-    if(error) {
-      logDev('debug', 'QR Code generation error: ' + error);
-      return;
-    }
-    qrcodeDiv.appendChild(canvas);
-  });
-}
-
-// == SHARE LINK BUILDING ==
-
-function buildShareLink(lat, lon) {
-  const baseUrl = window.location.origin + window.location.pathname;
-  return `${baseUrl}?lat=${lat}&lon=${lon}`;
-}
-
-// == LINK EXPIRY COUNTDOWN ==
-
-function startCountdown(seconds) {
-  let remaining = seconds;
-  countdownEl.textContent = formatSeconds(remaining);
-  if(countdownInterval) clearInterval(countdownInterval);
-  countdownInterval = setInterval(() => {
-    remaining--;
-    if(remaining < 0) {
-      countdownEl.textContent = 'Expired';
-      clearInterval(countdownInterval);
+  // Initialize map
+  function initMap(lat, lon) {
+    if (!map) {
+      map = L.map('map').setView([lat, lon], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18,
+      }).addTo(map);
+      marker = L.marker([lat, lon]).addTo(map);
     } else {
-      countdownEl.textContent = formatSeconds(remaining);
+      map.setView([lat, lon], 13);
+      marker.setLatLng([lat, lon]);
     }
-  }, 1000);
-}
+  }
 
-function formatSeconds(s) {
-  const m = Math.floor(s/60);
-  const sec = s % 60;
-  return `${m}m ${sec}s`;
-}
+  // SHA-256 hash function
+  function sha256(str) {
+    return CryptoJS.SHA256(str).toString(CryptoJS.enc.Hex);
+  }
 
-// == FRESHNESS COUNTER ==
+  // Fetch elevation using Open-Elevation API
+  async function fetchElevation(lat, lon) {
+    try {
+      const res = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`);
+      const data = await res.json();
+      return data.results[0].elevation;
+    } catch (e) {
+      return null;
+    }
+  }
 
-function startFreshnessCounter() {
-  if(freshnessInterval) clearInterval(freshnessInterval);
-  freshnessInterval = setInterval(() => {
-    if(!lastLocationTimestamp) {
-      freshnessEl.textContent = 'No data';
+  // Reverse geocode using OpenStreetMap Nominatim
+  async function reverseGeocode(lat, lon) {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return data.display_name;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Generate AI description placeholder (You can replace this with a real AI API call)
+  async function generateAiDescription(address) {
+    return `You are currently near: ${address}`;
+  }
+
+  // Generate QR code for sharing URL
+  function generateQRCode(url) {
+    qrCodeContainer.innerHTML = '';
+    new QRCode(qrCodeContainer, {
+      text: url,
+      width: 150,
+      height: 150,
+      colorDark: '#0ff',
+      colorLight: '#000',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+
+  // Update countdown timer
+  function startCountdown() {
+    function update() {
+      let now = Date.now();
+      let diff = expirationTime - now;
+      if (diff <= 0) {
+        countdownElem.textContent = 'Link expired.';
+        statusElem.textContent = 'Status: Link expired.';
+        // Optionally disable sharing buttons here
+        disableSharingButtons(true);
+      } else {
+        let mins = Math.floor(diff / 60000);
+        let secs = Math.floor((diff % 60000) / 1000);
+        countdownElem.textContent = `Link expires in: ${mins}m ${secs}s`;
+      }
+    }
+    update();
+    return setInterval(update, 1000);
+  }
+
+  // Disable/enable sharing buttons
+  function disableSharingButtons(disable) {
+    document.querySelectorAll('button.share-btn').forEach(btn => {
+      btn.disabled = disable;
+      btn.style.opacity = disable ? '0.5' : '1';
+      btn.style.cursor = disable ? 'default' : 'pointer';
+    });
+  }
+
+  // Compose shareable message with location info and hash
+  function composeMessage() {
+    return `🚀 My current location: ${address}\n
+Latitude: ${lat}\nLongitude: ${lon}\nElevation: ${elevation}m\n
+SHA-256 Signature: ${hashValue}\n
+Link expires in 10 minutes.\n
+Check out my location universe!`;
+  }
+
+  // Share handlers for each platform
+  function shareWhatsApp() {
+    const message = encodeURIComponent(composeMessage());
+    const url = `https://wa.me/?text=${message}`;
+    window.open(url, '_blank');
+  }
+  function shareSMS() {
+    const message = encodeURIComponent(composeMessage());
+    const url = `sms:?&body=${message}`;
+    window.open(url);
+  }
+  function shareEmail() {
+    const subject = encodeURIComponent('My Location Universe 🌌');
+    const body = encodeURIComponent(composeMessage());
+    const url = `mailto:?subject=${subject}&body=${body}`;
+    window.open(url);
+  }
+  function shareTelegram() {
+    const message = encodeURIComponent(composeMessage());
+    const url = `https://t.me/share/url?url=&text=${message}`;
+    window.open(url, '_blank');
+  }
+
+  // Voice-over the AI description
+  function speakDescription(text) {
+    if (!('speechSynthesis' in window)) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // Animate globe canvas (simple rotating Earth)
+  function animateGlobe() {
+    const canvas = document.getElementById('globe');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 200;
+    canvas.height = 200;
+
+    const earth = new Image();
+    earth.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Earth_equirectangular_projection_SW.jpg/320px-Earth_equirectangular_projection_SW.jpg';
+
+    let rotation = 0;
+
+    earth.onload = () => {
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width/2, canvas.height/2);
+        ctx.rotate(rotation);
+        ctx.drawImage(earth, -canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
+        ctx.restore();
+        rotation += 0.002;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  }
+
+  // Developer panel toggle on Ctrl+D
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key.toLowerCase() === 'd') {
+      devPanel.hidden = !devPanel.hidden;
+    }
+  });
+
+  // Main function to get geolocation and update UI
+  async function updateLocation() {
+    if (!navigator.geolocation) {
+      statusElem.textContent = 'Geolocation is not supported by your browser.';
       return;
     }
-    const diffSec = Math.floor((Date.now() - lastLocationTimestamp) / 1000);
-    freshnessEl.textContent = diffSec + ' seconds';
-  }, 1000);
-}
+    statusElem.textContent = 'Obtaining location...';
 
-// == LOCATION UPDATE HANDLER ==
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      lat = position.coords.latitude.toFixed(6);
+      lon = position.coords.longitude.toFixed(6);
+      elevElem.textContent = 'Elevation: fetching...';
+      latElem.textContent = `Latitude: ${lat}`;
+      lonElem.textContent = `Longitude: ${lon}`;
 
-async function handleLocation(position) {
-  const coords = position.coords;
-  lastLocationTimestamp = Date.now();
+      elevation = await fetchElevation(lat, lon);
+      elevElem.textContent = `Elevation: ${elevation !== null ? elevation + ' m' : 'Unavailable'}`;
 
-  currentLocation = {
-    lat: coords.latitude,
-    lon: coords.longitude,
-    elevation: coords.altitude || 0,
-    speed: coords.speed || 0,
-    heading: coords.heading || 0
-  };
+      address = await reverseGeocode(lat, lon) || 'Unknown location';
+      descElem.textContent = 'Generating AI description...';
 
-  latEl.textContent = currentLocation.lat.toFixed(6);
-  lonEl.textContent = currentLocation.lon.toFixed(6);
-  elevEl.textContent = currentLocation.elevation ? currentLocation.elevation.toFixed(2) : 'N/A';
-  speedEl.textContent = currentLocation.speed ? currentLocation.speed.toFixed(2) : '0';
-  directionEl.textContent = currentLocation.heading ? currentLocation.heading.toFixed(2) : 'N/A';
-  timestampEl.textContent = new Date(lastLocationTimestamp).toLocaleString();
+      aiDescription = await generateAiDescription(address);
+      descElem.textContent = aiDescription;
 
-  // Reverse geocode
-  currentAddress = await reverseGeocode(currentLocation.lat, currentLocation.lon);
-  addressEl.textContent = currentAddress;
+      // Speak the description once loaded
+      speakDescription(aiDescription);
 
-  // AI description
-  aiDescEl.textContent = await aiDescribeLocation(currentAddress);
+      const rawDataString = `${lat},${lon},${elevation},${address}`;
+      hashValue = sha256(rawDataString);
+      hashElem.textContent = `SHA-256 Hash: ${hashValue}`;
 
-  // SHA-256 hash
-  currentHash = await sha256Hash(`${currentLocation.lat},${currentLocation.lon},${currentLocation.elevation},${lastLocationTimestamp}`);
-  hashEl.textContent = currentHash;
+      // Initialize or update map
+      initMap(lat, lon);
 
-  // Update share links
-  const shareUrl = buildShareLink(currentLocation.lat, currentLocation.lon);
-  appleMapsLink.href = `https://maps.apple.com/?ll=${currentLocation.lat},${currentLocation.lon}`;
-  googleMapsLink.href = `https://www.google.com/maps/search/?api=1&query=${currentLocation.lat},${currentLocation.lon}`;
-  wazeLink.href = `https://waze.com/ul?ll=${currentLocation.lat},${currentLocation.lon}&navigate=yes`;
-  geoLink.href = `geo:${currentLocation.lat},${currentLocation.lon}`;
-  copyLinkBtn.dataset.link = shareUrl;
+      // Generate shareable URL for QR code (you can replace base URL with your own)
+      const shareURL = `${window.location.origin}${window.location.pathname}?lat=${lat}&lon=${lon}&elev=${elevation}&hash=${hashValue}`;
+      generateQRCode(shareURL);
 
-  // Generate QR code
-  generateQRCode(shareUrl);
-
-  // Init/update map
-  initMap(currentLocation.lat, currentLocation.lon);
-
-  // Show location section
-  document.getElementById('locationInfo').style.display = 'block';
-
-  // Start freshness and countdown
-  startFreshnessCounter();
-  startCountdown(linkExpirySeconds);
-
-  // Voice assistant
-  speak(`Location secured. Latitude ${currentLocation.lat.toFixed(4)}. Longitude ${currentLocation.lon.toFixed(4)}. Elevation ${currentLocation.elevation ? currentLocation.elevation.toFixed(1) : 'unknown'} meters.`);
-  
-  logDev('gps', `Location updated: Lat ${currentLocation.lat}, Lon ${currentLocation.lon}, Elev ${currentLocation.elevation}`);
-}
-
-// == GET LOCATION ==
-
-document.getElementById('getLocationBtn').addEventListener('click', () => {
-  if(!navigator.geolocation) {
-    alert('Geolocation not supported by your browser.');
-    return;
+      statusElem.textContent = 'Location updated successfully.';
+      devLog.textContent = JSON.stringify({
+        latitude: lat,
+        longitude: lon,
+        elevation,
+        address,
+        aiDescription,
+        hashValue,
+        shareURL,
+        timestamp: new Date().toISOString(),
+      }, null, 2);
+    }, (error) => {
+      statusElem.textContent = `Error obtaining location: ${error.message}`;
+    }, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0,
+    });
   }
-  if(watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-  watchId = navigator.geolocation.watchPosition(handleLocation, e => {
-    alert('Error getting location: ' + e.message);
-    logDev('debug', 'Geolocation error: ' + e.message);
-  }, {
-    enableHighAccuracy: true,
-    maximumAge: 5000,
-    timeout: 10000
-  });
-  logDev('gps', 'Started watching location...');
-});
 
-// == COPY LINK ==
+  // Initialize globe animation
+  animateGlobe();
 
-copyLinkBtn.addEventListener('click', () => {
-  const link = copyLinkBtn.dataset.link;
-  if(!link) return;
-  navigator.clipboard.writeText(link).then(() => {
-    alert('Share link copied to clipboard!');
-  }).catch(() => {
-    alert('Failed to copy link. Please copy manually: ' + link);
-  });
-});
+  // Set up sharing buttons
+  document.getElementById('whatsapp-btn').onclick = shareWhatsApp;
+  document.getElementById('sms-btn').onclick = shareSMS;
+  document.getElementById('email-btn').onclick = shareEmail;
+  document.getElementById('telegram-btn').onclick = shareTelegram;
 
-// == URL PARAMS - preload location ==
+  // Start countdown
+  startCountdown();
 
-function getQueryParams() {
-  const params = {};
-  const query = window.location.search.substring(1);
-  query.split('&').forEach(pair => {
-    const [k, v] = pair.split('=');
-    if(k && v) params[k] = decodeURIComponent(v);
-  });
-  return params;
-}
+  // Kick off first location update
+  updateLocation();
 
-async function preloadLocationFromParams() {
-  const params = getQueryParams();
-  if(params.lat && params.lon) {
-    const fakePos = {
-      coords: {
-        latitude: parseFloat(params.lat),
-        longitude: parseFloat(params.lon),
-        altitude: 0,
-        speed: 0,
-        heading: 0
-      }
-    };
-    await handleLocation(fakePos);
-  }
-}
+  // Optionally, auto-update location every 60 seconds
+  setInterval(updateLocation, 60000);
 
-preloadLocationFromParams();
-
-// == DEVICE MOTION & COMPASS ==
-
-let motionData = { alpha: 0, beta: 0, gamma: 0 };
-let compassHeading = 0;
-
-function handleDeviceMotion(e) {
-  motionData.alpha = e.rotationRate.alpha || 0;
-  motionData.beta = e.rotationRate.beta || 0;
-  motionData.gamma = e.rotationRate.gamma || 0;
-  logDev('motion', `Alpha: ${motionData.alpha.toFixed(2)}, Beta: ${motionData.beta.toFixed(2)}, Gamma: ${motionData.gamma.toFixed(2)}`);
-}
-
-function handleCompass(e) {
-  // Alpha is compass direction
-  if(e.webkitCompassHeading) {
-    compassHeading = e.webkitCompassHeading;
-  } else if(e.alpha) {
-    compassHeading = 360 - e.alpha;
-  }
-  logDev('compass', `Compass heading: ${compassHeading.toFixed(2)}`);
-}
-
-if(window.DeviceMotionEvent) {
-  window.addEventListener('devicemotion', handleDeviceMotion);
-}
-if(window.DeviceOrientationEvent) {
-  window.addEventListener('deviceorientationabsolute', handleCompass);
-  window.addEventListener('deviceorientation', handleCompass);
-}
-
-// == DEV PANEL TOGGLE AND TABS ==
-
-document.body.addEventListener('keydown', e => {
-  if(e.key === '`' || (e.ctrlKey && e.shiftKey && e.key === 'D')) {
-    if(devPanel.style.display === 'none') devPanel.style.display = 'block';
-    else devPanel.style.display = 'none';
-  }
-});
-
-devTabs.forEach(btn => {
-  btn.addEventListener('click', () => {
-    devTabs.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeDevTab = btn.dataset.tab;
-    updateDevText();
-  });
-});
-
-// == ANIMATED GLOBE BACKGROUND ==
-
-const globeCanvas = document.getElementById('globeCanvas');
-const ctx = globeCanvas.getContext('2d');
-let globeWidth, globeHeight;
-
-function resizeCanvas() {
-  globeWidth = window.innerWidth;
-  globeHeight = window.innerHeight;
-  globeCanvas.width = globeWidth;
-  globeCanvas.height = globeHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-const globeTexture = new Image();
-globeTexture.src = 'https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg';
-
-let rotation = 0;
-
-function drawGlobe() {
-  if(!globeTexture.complete) {
-    requestAnimationFrame(drawGlobe);
-    return;
-  }
-  ctx.clearRect(0, 0, globeWidth, globeHeight);
-  const cx = globeWidth/2;
-  const cy = globeHeight/2;
-  const radius = Math.min(cx, cy) * 0.8;
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(rotation);
-  ctx.drawImage(globeTexture, -radius, -radius, radius*2, radius*2);
-  ctx.restore();
-
-  rotation += 0.0005;
-
-  requestAnimationFrame(drawGlobe);
-}
-drawGlobe();
-
+})();
 </script>
 </body>
 </html>
